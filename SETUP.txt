@@ -1,0 +1,63 @@
+SHANI JEWELLERS — SETUP GUIDE
+=============================
+
+WHAT IS INCLUDED
+- index.html: the website
+- schema.sql: cloud database tables and private-user access policies
+- migration_multi_item_bills.sql: upgrade existing database for multi-item invoices
+
+IMPORTANT
+This is a starter application. Cloud sync becomes active after you create and configure a Supabase project. Do not publish the website with placeholder credentials. Never put a Supabase service_role key in website code. Use only the Project URL and anon/public key.
+
+A. CREATE YOUR CLOUD DATABASE
+1. Open https://supabase.com and create a project.
+2. Save the database password somewhere safe.
+3. Open the project's SQL Editor.
+4. Open schema.sql from this folder, copy all its contents, paste into SQL Editor and click Run.
+5. In Project Settings > API (or Connect), copy the Project URL and anon/public key.
+
+B. CONNECT THE WEBSITE
+1. Open index.html in Notepad or VS Code.
+2. Near the bottom, find:
+   const SUPABASE_URL="YOUR_SUPABASE_PROJECT_URL";
+   const SUPABASE_ANON_KEY="YOUR_SUPABASE_ANON_KEY";
+3. Replace the placeholders with your actual Project URL and anon/public key.
+4. Save index.html.
+5. Open index.html in Chrome. For a real deployed website, upload the folder to a static host such as Netlify or Cloudflare Pages using HTTPS.
+
+C. CREATE YOUR ACCOUNT
+1. On the sign-in screen enter your email and a strong password.
+2. Click Create account.
+3. If email confirmation is enabled, confirm the email, then sign in.
+4. Each signed-in account sees only its own rows due to Row Level Security policies.
+
+C2. IF YOU ALREADY SET UP THE FIRST VERSION
+1. In Supabase SQL Editor, create a New Query.
+2. Open migration_multi_item_bills.sql, copy all its contents, paste and click Run.
+3. This adds the JSON line-items column and permits mixed Gold + Silver bills.
+4. Your existing inventory and sales records remain in place.
+
+D. DAILY WORKFLOW
+1. Purchases / Stock: add each jewellery design as a stock item.
+2. Enter gross weight, net metal weight, purchase wastage %, supplier and purchase rate.
+3. Create bill: select an item, enter quantity, rate, selling wastage, making charges and discount, then click Add item to bill. Repeat for every item. Each item keeps its own wastage percentage.
+4. Review the combined invoice and GST, then Save bill & reduce stock. The printable invoice lists every item separately.
+5. Sales & bills: print a previous bill. Reports show sales and stock valuation.
+
+CALCULATION USED
+Net metal weight = entered net weight × quantity
+Selling wastage weight = net metal weight × selling wastage %
+Billable weight = net metal weight + selling wastage weight
+Metal value = billable weight × rate per gram
+Taxable subtotal = metal value + making charges − discount
+GST = taxable subtotal × GST %
+Grand total = taxable subtotal + GST
+
+IMPORTANT OPERATIONAL NOTES
+- Purchase wastage is stored as a reference value and does not increase the net metal weight. This avoids mixing metal weight and wastage assumptions.
+- Multi-item invoices are supported. Each invoice stores its individual line details, including separate selling wastage for each item.
+- GST is an editable field. Confirm correct GST rates, invoice wording, HSN and tax treatment with your accountant before using invoices for compliance.
+- The website saves cloud data, but the store profile is currently saved in that browser only.
+- Always take regular backups from Supabase. Test with sample records before entering real inventory.
+- This starter version saves the sale and then updates each stock item in separate requests; verify stock after interrupted network connections. A production deployment should use a single database transaction/RPC for atomic billing.
+- This starter app does not yet implement customer returns, repair jobs, barcode scanning, multi-user staff roles, or audit logs.
